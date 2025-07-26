@@ -1,14 +1,14 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+        context: .
+        dockerfile: ./docker/php/Dockerfile.dev
     container_name: crm_dev_app
     restart: unless-stopped
-    # volumes:
-    #   - .:/var/www/html
+    volumes:
+        - ./src:/var/www/html
     ports:
-      - "8081:8000"
+        - ${APP_PORT:-8081}:8000
     networks:
       - net_crm
     env_file:
@@ -16,7 +16,12 @@ services:
     environment:
       APP_NAME: "new-UCZE"
       APP_ENV: local
-      HORIZON_ENV: local
+      OCTANE_SERVER: "frankenphp"
+      OCTANE_WORKERS: "4"
+      OCTANE_TASK_WORKERS: "6"
+      OCTANE_MAX_EXECUTION_TIME: "30"
+      KONTO_WSIP_API_URL: "https://konto.wsip.pl/"
+      KONTO_WSIP_API_HASH: "o.A30-L5!XR^oWr2@DWVUm!k$$Xc6>?vh"
     depends_on:
       - mysql
       - redis
@@ -47,7 +52,7 @@ services:
     env_file:
       -  .env.docker
     ports:
-        - "8090:80"
+        - "8097:80"
     networks:
         - net_crm
     depends_on:
@@ -69,7 +74,7 @@ services:
       - redisdata_dev:/data
     networks:
       - net_crm
-    command: redis-server --appendonly yes
+    command: redis-server --requirepass "rasdasUY67123a23!!"
 
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -93,7 +98,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 192.168.100.0/24
+        - subnet: 192.168.101.0/24
 
 volumes:
   dbdata_dev:
