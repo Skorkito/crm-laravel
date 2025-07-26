@@ -59,7 +59,7 @@ COPY ./docker/etc/supervisor.d/supervisord.dev.conf /etc/supervisor/conf.d/super
 RUN composer install --optimize-autoloader
 
 # Install Node.js dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Set permissions for Laravel.
 RUN chown -R ${USER}:${USER} storage bootstrap/cache
