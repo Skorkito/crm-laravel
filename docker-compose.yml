@@ -1,0 +1,102 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm_dev_app
+    restart: unless-stopped
+    # volumes:
+    #   - .:/var/www/html
+    ports:
+      - "8081:8000"
+    networks:
+      - net_crm
+    env_file:
+      -  .env.docker
+    environment:
+      APP_NAME: "new-UCZE"
+      APP_ENV: local
+      HORIZON_ENV: local
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8.0
+    container_name: crm_dev_mysql
+    restart: unless-stopped
+    env_file:
+      -  .env.docker
+    command: --sort_buffer_size=64M
+    ports:
+      - "3308:3306"
+    volumes:
+      - dbdata_dev:/var/lib/mysql
+    networks:
+      - net_crm
+    environment:
+      MYSQL_ROOT_PASSWORD: "rasdasUY67123a23!!"
+      MYSQL_DATABASE: "project_manager"
+      MYSQL_USER: "user_project_manager"
+      MYSQL_PASSWORD: "rasdaasd3a23!add!"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: crm_dev_phpmyadmin
+    restart: unless-stopped
+    env_file:
+      -  .env.docker
+    ports:
+        - "8090:80"
+    networks:
+        - net_crm
+    depends_on:
+        - mysql
+    environment:
+        PMA_HOST: "mysql"
+        PMA_USER: "user_project_manager"
+        PMA_PASSWORD: "rasdaasd3a23!add!"
+
+  redis:
+    image: redis:alpine
+    container_name: crm_dev_redis
+    restart: unless-stopped
+    env_file:
+      -  .env.docker
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata_dev:/data
+    networks:
+      - net_crm
+    command: redis-server --appendonly yes
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: crm_dev_redis_commander
+    restart: unless-stopped
+    env_file:
+      -  .env.docker
+    ports:
+      - "8091:8081"
+    networks:
+      - net_crm
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+
+networks:
+  net_crm:
+    name: net_crm
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.100.0/24
+
+volumes:
+  dbdata_dev:
+    name: crm_dev_dbdata
+  redisdata_dev:
+    name: crm_dev_redisdata
